@@ -10,7 +10,6 @@ https://randomnerdtutorials.com/esp32-esp8266-firebase-gauges-charts/
 #### 3.Authentication  
 Authentication >> Add User  
 Realtime Database >> Rules  
-
 {
   "rules": {
     "UsersData": {
@@ -18,11 +17,13 @@ Realtime Database >> Rules
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid"
       }
+    },
+    "config" : {
+      ".read": true,
+    	".write": true
     }
   }
 }
-
-
 
 ## Terminal  
 #### 1.cd HT-Army  
@@ -43,10 +44,19 @@ Realtime Database >> Rules
 #### 5.copy HT-Army App from GitHub to project floder  
 #### 6.firebase deploy  
 
-
-
-
-
 https://ht-army.web.app/  
+
+##Arduino  
+DHT22 <---> D1  
+VCC <---> 3V3  
+GND <---> GND  
+LED2.4Display  
+CS <---> D2  
+RST <---> D3  
+D/C <---> D4  
+MOSI <---> D7  
+SCK <---> D5  
+VCC <---> 3V3  
+GND <---> GND  
 
 
