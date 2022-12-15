@@ -98,6 +98,8 @@ function epochToJsDate(epochTime){
       const time8 = document.getElementById('time8')
       const gps0 = document.getElementById('gps0')
       const gps1 = document.getElementById('gps1')
+      const adjusterror0 = document.getElementById('adjusterror0')
+      const adjusterror1 = document.getElementById('adjusterror1')
       const unit = document.getElementById('unit')
 
 
@@ -133,6 +135,15 @@ function epochToJsDate(epochTime){
   
       });
 
+      var iiii = 0;
+      firebase.database().ref('UsersData/' + uid.toString() + '/config/adjusterror').orderByKey().on('child_added', snapshot =>{
+        var jsonData = snapshot.toJSON(); // example: {temperature: 25.02, humidity: 50.20, flag: 1008.48, timestamp:1641317355}
+        console.log(jsonData)
+        document.getElementById('adjusterror'+iiii.toString()).value = jsonData;
+        iiii += 1;
+  
+      });
+
       firebase.database().ref('UsersData/' + uid.toString() + '/config/unit').orderByKey().on('child_added', snapshot =>{
         var jsonData = snapshot.toJSON(); // example: {temperature: 25.02, humidity: 50.20, flag: 1008.48, timestamp:1641317355}
         console.log(jsonData)
@@ -148,6 +159,9 @@ function epochToJsDate(epochTime){
       // Get number of readings to plot saved on database (runs when the page first loads and whenever there's a change in the database)
       chartRef.on('value', snapshot =>{
         chartRange = Number(snapshot.val());
+        if(chartRange > 20){
+          chartRange = 20;
+        }
         console.log(chartRange);
         // Delete all data from charts to update with new values when a new range is selected
         chartT.destroy();
@@ -411,6 +425,11 @@ function epochToJsDate(epochTime){
       firebase.database().ref('UsersData/' + u.toString() + '/config/gps').set({
         lat : gps0.value,
         lon : gps1.value
+      });
+
+      firebase.database().ref('UsersData/' + u.toString() + '/config/adjusterror').set({
+        humid : adjusterror0.value,
+        temp : adjusterror1.value
       });
 
       firebase.database().ref('UsersData/' + u.toString() + '/config/unit').set({
