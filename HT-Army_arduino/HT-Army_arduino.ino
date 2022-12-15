@@ -11,6 +11,22 @@ MOSI <---> D7
 SCK <---> D5 
 VCC <---> 3V3,
 GND <---> GND
+
+{
+  "rules": {
+    "UsersData": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "config" : {
+      ".read": true,
+    	".write": true
+    }
+  }
+}
+
 */
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <NTPClient.h> //firebase
@@ -30,9 +46,12 @@ GND <---> GND
 #define DHTTYPE DHT22 
 #define API_KEY "AIzaSyAS18pOu8eEeyTO6iZM80MZQAtsgLVilW0"
 #define DATABASE_URL "https://ht-army-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define USER_EMAIL "ht-army04@htarmy.com"       //---------------------
-#define USER_PASSWORD "12345678"        //---------------------
-#define TIME_SENDFIREBASE 180000     //180000        //---------------------ms
+#define USER_EMAIL "army001@ht.com"        //"ht-army04@htarmy.com"       //---------------------
+#define USER_PASSWORD "thaiarmy"          //"12345678"        //---------------------
+// #define TIME_SENDFIREBASE 180000     //180000        //---------------------ms
+#define ST77XX_B 0X04FF
+#define ST77XX_M 0XF81F
+#define ST77XX_CYAN 0X07FF
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -50,7 +69,10 @@ float humid,temp,hic,water;
 int train,rest,timestamp;
 String flag,status;
 unsigned long sendDataPrevMillis = 0;
-unsigned long timerDelay = TIME_SENDFIREBASE;
+// unsigned long timerDelay = TIME_SENDFIREBASE;
+int timerDelay = 180;
+float adjust_temp = 0;
+float adjust_humid = 0;
 
 FirebaseJson json,json2;
 WiFiUDP ntpUDP;
@@ -85,11 +107,11 @@ void update_firebase(float temp,float humid,String flag){
   Serial.printf("Set2 json... %s\n", Firebase.RTDB.setJSON(&fbdo, parentPath2.c_str(), &json2) ? "ok" : fbdo.errorReason().c_str());
 }
 
-void updateScreen(String flag,float temp,float humid,String status) {
+void updateScreen(String flag,float temp,float humid,String status,int bat_percentage) {
 
   tft.fillScreen(ST77XX_BLACK);
   if(status=="online"){
-    tft.setTextColor(ST77XX_GREEN);
+    tft.setTextColor(ST77XX_M);
   }
   else{
     tft.setTextColor(ST77XX_RED);
@@ -101,7 +123,7 @@ void updateScreen(String flag,float temp,float humid,String status) {
   tft.setTextSize(3);
   tft.print("O");
 
-  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextColor(ST77XX_B);
   tft.setCursor(167, 30);
   tft.setTextSize(10);
   tft.print(String(int(floor(humid))));
@@ -112,7 +134,7 @@ void updateScreen(String flag,float temp,float humid,String status) {
   tft.setCursor(110, 72);
 
   if(status=="online"){
-    tft.setTextColor(ST77XX_GREEN);
+    tft.setTextColor(ST77XX_M);
   }
   else{
     tft.setTextColor(ST77XX_RED);
@@ -120,7 +142,7 @@ void updateScreen(String flag,float temp,float humid,String status) {
   tft.print("." + String(int(10*(temp-floor(temp)))));
 
   tft.setCursor(270, 72);
-  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextColor(ST77XX_B);
   tft.print("." + String(int(10*(humid-floor(humid)))));
 
   tft.setCursor(0, 160);
@@ -149,7 +171,41 @@ void updateScreen(String flag,float temp,float humid,String status) {
     tft.fillRect(0,140,350,140,ST77XX_WHITE);
     tft.setTextColor(ST77XX_BLACK);
     tft.println(" WHITE ");   //7
-  }  
+  }
+
+  if(status == "online"){
+    tft.setCursor(240, 220);
+    if(flag=="GREEN"){
+      tft.setTextColor(ST77XX_BLUE);
+    }
+    else{
+      tft.setTextColor(ST77XX_GREEN);
+    }
+  }
+  else{
+    tft.setCursor(230, 220);
+    if(flag=="RED"){
+      tft.setTextColor(ST77XX_BLACK);
+    }
+    else{
+      tft.setTextColor(ST77XX_RED);
+    }    
+  }
+
+  // tft.setCursor(0, 220);
+  // // tft.setTextColor(ST77XX_RED);
+  // tft.setTextSize(2);
+  // tft.print("BA" + String(bat_percentage) + "%");
+
+  // tft.setCursor(230, 220);
+  // tft.setCursor(0, 200);
+  // tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(2);
+  String s = status;
+  s.toUpperCase();
+  tft.print(s);
+  
+
 }
 
 void setup(){
@@ -174,7 +230,24 @@ void setup(){
   }
 }
 
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 void loop(){
+
+  // sensorValue = analogRead(A0);
+  // float voltage = (((analogRead(A0) * 3.3) / 1024) * 2 + 0); //multiply by two as voltage divider network is 100K & 100K Resistor
+  // int bat_percentage = 2*mapfloat(voltage, 2.8, 4.2, 0, 100)-19; //2.8V as Battery Cut off Voltage & 4.2V as Maximum Voltage
+  int bat_percentage = analogRead(A0);
+
+  Serial.print("Batterry Percen...");
+  Serial.println(bat_percentage);
+  Serial.print("A0...");
+  Serial.println(analogRead(A0));
+  // Serial.print("VOL..");
+  // Serial.println(analogRead(voltage));
 
   if(WiFi.status()==3 && firsttime == true){
     timeClient.begin();
@@ -197,12 +270,49 @@ void loop(){
     databasePath = "/UsersData/" + uid + "/historys";
     databasePath2 = "/UsersData/" + uid + "/last";
 
+    //--------
+    Serial.println("xxx--------------===-");
+    if (Firebase.RTDB.getInt(&fbdo, "/config/sent_data")) {
+      Serial.println("--------------===-");
+      if (fbdo.dataType() == "int") {
+        timerDelay = fbdo.intData();
+        Serial.println(timerDelay);
+      }
+    }
+    else {
+      Serial.println(fbdo.errorReason());
+    }
+
+    if (Firebase.RTDB.getString(&fbdo, "/UsersData/" + uid + "/config/adjusterror/temp")) {
+      Serial.println("--------------===-");
+      if (fbdo.dataType() == "string") {
+        adjust_temp = fbdo.stringData().toFloat();
+        Serial.println(adjust_temp);
+      }
+    }
+    else {
+      Serial.println(fbdo.errorReason());
+    }
+
+    if (Firebase.RTDB.getString(&fbdo, "/UsersData/" + uid + "/config/adjusterror/humid")) {
+      Serial.println("--------------===-");
+      if (fbdo.dataType() == "string") {
+        adjust_humid = fbdo.stringData().toFloat();
+        Serial.println(adjust_humid);
+      }
+    }
+    else {
+      Serial.println(fbdo.errorReason());
+    }
+
+    
+
     firsttime = false;
 
   }
   //read DHT
-  humid = dht.readHumidity();
-  temp = dht.readTemperature();
+  humid = dht.readHumidity() + adjust_temp;
+  temp = dht.readTemperature() + adjust_humid;
   if(isnan(humid) || isnan(temp)) {
     humid = -99;
     temp = -99;
@@ -252,9 +362,15 @@ void loop(){
     status = "offline";
   }
   //update screen
-  updateScreen(flag,temp,humid,status);
+  updateScreen(flag,temp,humid,status,bat_percentage);
   //firebase
-  if (WiFi.status()==3 && Firebase.ready() && (millis() - sendDataPrevMillis > timerDelay || sendDataPrevMillis == 0)){
+  Serial.print("timerDelay");
+  Serial.println(timerDelay);
+  Serial.print("adjust_temp");
+  Serial.println(adjust_temp);
+  Serial.print("adjust_humid");
+  Serial.println(adjust_humid);
+  if (WiFi.status()==3 && Firebase.ready() && (millis() - sendDataPrevMillis > timerDelay*1000 || sendDataPrevMillis == 0)){
     update_firebase(temp,humid,flag);
   }
 
