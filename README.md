@@ -46,7 +46,7 @@ Realtime Database >> Rules
 
 https://ht-army.web.app/  
 
-##Arduino  
+## Arduino  
 DHT22 <---> D1  
 VCC <---> 3V3  
 GND <---> GND  
