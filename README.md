@@ -23,7 +23,9 @@ Realtime Database >> Rules
     	".write": true
     }
   }
-}
+}  
+#### 4.add path to firebase
+config > sent_data:60    //sent data to firebase every 60 secound. 
 
 ## Terminal  
 #### 1.cd HT-Army  
