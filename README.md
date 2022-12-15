@@ -5,7 +5,7 @@ https://randomnerdtutorials.com/esp32-esp8266-firebase-gauges-charts/
  
 
 ## Web App  
-#### 1.firebase console  
+#### 1.firebase console : phawit.1000student@gmail.com
 #### 2.Project overview >> Add app >> html >> register app >> copy firebaseConfig  
 #### 3.Authentication  
 Authentication >> Add User  
