@@ -4,12 +4,13 @@ HT22 <---> D1
 VCC <---> 3V3,
 GND <---> GND
 LED2.4Display
+LED <---> 3V3
 CS <---> D2 
 RST <---> D3 
 D/C <---> D4 
 MOSI <---> D7 
 SCK <---> D5 
-VCC <---> 3V3,
+VCC <---> 3V3,l
 GND <---> GND
 
 {
@@ -46,7 +47,7 @@ GND <---> GND
 #define DHTTYPE DHT22 
 #define API_KEY "AIzaSyAS18pOu8eEeyTO6iZM80MZQAtsgLVilW0"
 #define DATABASE_URL "https://ht-army-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define USER_EMAIL "army001@ht.com"        //"ht-army04@htarmy.com"       //---------------------
+#define USER_EMAIL "army002@ht.com"        //"ht-army04@htarmy.com"       //---------------------
 #define USER_PASSWORD "thaiarmy"          //"12345678"        //---------------------
 // #define TIME_SENDFIREBASE 180000     //180000        //---------------------ms
 #define ST77XX_B 0X04FF
@@ -174,7 +175,7 @@ void updateScreen(String flag,float temp,float humid,String status,int bat_perce
   }
 
   if(status == "online"){
-    tft.setCursor(240, 220);
+    tft.setCursor(240, 220);    
     if(flag=="GREEN"){
       tft.setTextColor(ST77XX_BLUE);
     }
@@ -217,6 +218,10 @@ void setup(){
   tft.invertDisplay(false);
   tft.setRotation(3);        
   tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_RED);
+  tft.setCursor(0, 40);
+  tft.setTextSize(7);
+  tft.println(String(USER_EMAIL).substring(0, 7));
 
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP    
   //wm.resetSettings();
@@ -305,14 +310,28 @@ void loop(){
       Serial.println(fbdo.errorReason());
     }
 
-    
+    tft.setTextColor(ST77XX_YELLOW);
+    tft.setTextSize(4);
+    tft.setCursor(0, 120);
+    String s = "";
+    if(adjust_temp >0){
+      s = "+";
+    }
+    tft.println("Temp "+s+String(adjust_temp));
+    tft.setCursor(0, 170);
+    s = "";
+    if(adjust_humid >0){
+      s = "+";
+    }
+    tft.println("Humid "+s+String(adjust_humid));
+    delay(5000);
 
     firsttime = false;
 
   }
   //read DHT
-  humid = dht.readHumidity() + adjust_temp;
-  temp = dht.readTemperature() + adjust_humid;
+  humid = dht.readHumidity() + adjust_humid;
+  temp = dht.readTemperature() + adjust_temp;
   if(isnan(humid) || isnan(temp)) {
     humid = -99;
     temp = -99;
@@ -363,6 +382,10 @@ void loop(){
   }
   //update screen
   updateScreen(flag,temp,humid,status,bat_percentage);
+  Serial.print("temp");
+  Serial.println(temp);
+  Serial.print("humid");
+  Serial.println(humid);
   //firebase
   Serial.print("timerDelay");
   Serial.println(timerDelay);
