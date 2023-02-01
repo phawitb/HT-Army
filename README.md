@@ -61,4 +61,7 @@ SCK <---> D5
 VCC <---> 3V3  
 GND <---> GND  
 
+-----------------------
+config.json
+Project setting > Service accounts > Generate new private key > download
 
