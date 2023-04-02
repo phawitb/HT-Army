@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>HT-Army App</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <script src="https://cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.7/all/gauge.min.js"></script>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script>
+      const firebaseConfig = {
+      apiKey: "AIzaSyAS18pOu8eEeyTO6iZM80MZQAtsgLVilW0",
+      authDomain: "ht-army.firebaseapp.com",
+      databaseURL: "https://ht-army-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ht-army",
+      storageBucket: "ht-army.appspot.com",
+      messagingSenderId: "71797114513",
+      appId: "1:71797114513:web:dbcfcea67d879a63f3a130"
+    };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.database();
+    </script>
+  </head>
+
+  <body>
+
+    <!--TOP BAR-->
+    <div class="topnav">
+      <h1>HT-Army App <i class="fas fa-clipboard-list"></i></h1>
+    </div>
+
+    <!--AUTHENTICATION BAR (USER DETAILS/LOGOUT BUTTON)-->
+    <div id="authentication-bar" style="display: none;">
+      <p>
+        <!-- <h5 id="unithead" type="text" name="fname"></h5> -->
+        <!-- <span id="unithead"></span> -->
+        <h1><span id="authentication-status"></span></h1>
+        <span id="user-details">USEREMAIL</span>
+        <a href="/" id="logout-link">(logout)</a>
+      </p>
+    </div>
+
+    <!--LOGIN FORM-->
+    <form id="login-form" style="display: none;">
+      <div class="form-elements-container">
+        <label for="input-email"><b>Email</b></label>
+        <input type="text" placeholder="Enter Username" id="input-email" required>
+
+        <label for="input-password"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" id="input-password" required>
+
+        <button type="submit" id="login-button">Login</button>
+        <p id="error-message" style="color:red;"></p>
+      </div>
+    </form>
+
+    <!--CONTENT (SENSOR READINGS)-->
+    <div class="content-sign-in" id="content-sign-in" style="display: none;">
+
+      <!--LAST UPDATE-->
+      <p><span class ="date-time">Last update: <span id="lastUpdate"></span></span></p>
+      <p>
+        Cards: <input type="checkbox" id="cards-checkbox" name="cards-checkbox" checked>
+        Gauges: <input type="checkbox" id="gauges-checkbox" name="gauges-checkbox" checked>
+        Historys: <input type="checkbox" id="charts-checkbox" name="charts-checkbox" unchecked>
+        Setting: <input type="checkbox" id="setting-checkbox" name="setting-checkbox" unchecked>
+      </p>
+      <div id="cards-div">
+        <div class="cards">
+          <!--TEMPERATURE-->
+          <div class="card">
+            <p><i class="fas fa-thermometer-half" style="color:#059e8a;"></i> TEMPERATURE</p>
+            <p><span class="reading"><span id="temp"></span> &deg;C</span></p>
+          </div>
+          <!--HUMIDITY-->
+          <div class="card">
+            <p><i class="fas fa-tint" style="color:#00add6;"></i> HUMIDITY</p>
+            <p><span class="reading"><span id="hum"></span> &percnt;</span></p>
+          </div>
+          <!--PRESSURE-->
+          <div class="card">
+            <p><i class="fas fa-angle-double-down" style="color:#e1e437;"></i> Flag</p>
+            <p><span class="reading"><span id="pres"></span></span></p>
+          </div>
+        </div>
+      </div>
+      <!--GAUGES-->
+      <div id ="gauges-div">
+        <div class="cards">
+          <!--TEMPERATURE-->
+          <div class="card">
+            <canvas id="gauge-temperature"></canvas>
+          </div>
+          <!--HUMIDITY-->
+          <div class="card">
+            <canvas id="gauge-humidity"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!--CHARTS-->
+      <div id="charts-div" style="display:none">
+        <!--SET NUMBER OF READINGS INPUT FIELD-->
+        <div>
+          <p> Number of readings: <input type="number" id="charts-range" step="10" min="5" max="50" value="5"></p>
+        </div>
+        <!--TEMPERATURE-CHART-->
+        <div class="cards">
+          <div class="card">
+            <p><i class="fas fa-thermometer-half" style="color:#059e8a;"></i> TEMPERATURE CHART</p>
+            <div id="chart-temperature" class="chart-container"></div>
+          </div>
+        </div>
+        <!--HUMIDITY-CHART-->
+        <div class="cards">
+          <div class="card">
+            <p><i class="fas fa-tint" style="color:#00add6;"></i> HUMIDITY CHART</p>
+            <div id="chart-humidity" class="chart-container"></div>
+          </div>
+        </div>
+      </div>
+      <div id="setting-div" style="display:none">
+        <!--PRESSURE-CHART-->
+        <div class="cards">
+          <div class="card">
+            <div id="chart-flag" class="chart-container">Setting</div>
+              <h5>Unit: <input id="unit" type="text" name="fname"></h5>
+              <h5>Line 1: <input id="line1" type="text" name="fname"></h5>
+              <h5>Line 2: <input id="line2" type="text" name="lname"></h5>
+              <h5>Line 3: <input id="line3" type="text" name="fname"></h5>
+              <h5>Line 4: <input id="line4" type="text" name="fname"></h5>
+              <h5>Time Aleart:</h5>
+              <DIV align="left">
+                <h7><input type="checkbox" id="everyhour" name="every hour" checked="true">everyhour</h7>
+              </DIV>
+              <br>
+                <input type="time" id="time1" value=":" class="example">
+                <input type="time" id="time2" value=":" class="example">
+                <input type="time" id="time3" value=":" class="example">
+                <input type="time" id="time4" value=":" class="example">
+                <input type="time" id="time5" value=":" class="example">
+                <input type="time" id="time6" value=":" class="example">
+                <input type="time" id="time7" value=":" class="example">
+                <input type="time" id="time8" value=":" class="example">
+                <input type="button" onclick="myFunction2()" value="Reset">
+              <br>
+              <br>
+              <h5>Lattitude: <input id="gps0" type="number" step="0.001" name="lname"></h5>
+              <h5>Longtitude: <input id="gps1" type="number" step="0.001" name="lname"></h5>
+              <h5>Adjust Temperature: <input id="adjusterror1" type="number" step="0.01" name="lname"></h5>
+              <h5>Adjust Humidity: <input id="adjusterror0" type="number" step="0.01" name="lname"></h5>
+              <br>
+              <br>
+              <input type="button" onclick="myFunction()" value="Submit">
+          </div>
+        </div>
+      </div>
+
+    <div id="delete-modal" class="modal" sytle="display:none">
+      <span onclick = "document.getElementById('delete-modal').style.display='none'" class="close" title="Close Modal">×</span>
+      <form id= "delete-data-form" class="modal-content" action="/">
+        <div class="container">
+          <h1>Delete Data</h1>
+          <p>Are you sure you want to delete all data from database?</p>
+          <div class="clearfix">
+            <button type="button" onclick="document.getElementById('delete-modal').style.display='none'" class="cancelbtn">Cancel</button>
+            <button type="submit" onclick="document.getElementById('delete-modal').style.display='none'" class="deletebtn">Delete</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!--TABLE WITH ALL DATA-->
+    <div class ="cards">
+      <div class="card" id="table-container" style= "display:none;">
+        <table id="readings-table">
+            <tr id="theader">
+              <th>Timestamp</th>
+              <th>Temp (ºC)</th>
+              <th>Hum (%)</th>
+              <th>Flag</th>
+            </tr>
+            <tbody id="tbody">
+            </tbody>
+        </table>
+        <p><button id="load-data" style= "display:none;">More results...</button></p>
+      </div>
+    </div>
+
+  </div>
+
+  <!--INCLUDE JS FILES-->
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/charts-definition.js"></script>
+  <script src="scripts/gauges-definition.js"></script>
+  <script src="scripts/index.js"></script>
+
+  </body>
+
+</html>
