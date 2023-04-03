@@ -73,11 +73,13 @@ firebase_admin = firebase_admin.initialize_app(cred, {'databaseURL': 'https://ht
 
 
 firsttime = True
+sent = False
+
 while True:
     try:
         if firsttime:
             T = get_time()
-            sent = False
+            firsttime = False
 
         time.sleep(10)
 
