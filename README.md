@@ -65,3 +65,6 @@ GND <---> GND
 config.json
 Project setting > Service accounts > Generate new private key > download
 
+Linetoken.  
+pInZpr6R5skqe5XMzgDYmP0i055iRgVJRc2n2s0UOYs
+
