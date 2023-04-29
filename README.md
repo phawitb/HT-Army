@@ -67,7 +67,6 @@ config.json
 Project setting > Service accounts > Generate new private key > download
 
 ## Sever
-#### Linetoken
-###### HT-Army(ALL) sever: 2QsPCWXYqqOOc3RHnKyrGGxrpoOGOOIjwKSWCtGWD1S
+#### Linetoken >> HT-Army(ALL) sever: 2QsPCWXYqqOOc3RHnKyrGGxrpoOGOOIjwKSWCtGWD1S
 
 
