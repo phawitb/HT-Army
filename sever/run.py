@@ -5,6 +5,8 @@ import time
 import requests
 from datetime import datetime
 
+TOKEN_GROUP_ALL = '2QsPCWXYqqOOc3RHnKyrGGxrpoOGOOIjwKSWCtGWD1S'
+
 def line_noti(token,msg):
     url = 'https://notify-api.line.me/api/notify'
     headers = {'content-type':'application/x-www-form-urlencoded','Authorization':'Bearer '+token}
@@ -81,6 +83,8 @@ while True:
             T = get_time()
             firsttime = False
 
+            line_noti(TOKEN_GROUP_ALL,f'HT-Army -->sever start!!! {T}')
+
         time.sleep(10)
 
         if sent:
@@ -126,9 +130,12 @@ while True:
                             msg = create_msg(last,unit)
                             print(msg)
                                 
+                            line_noti(TOKEN_GROUP_ALL,msg)
                             #line noti
                             for tok in token:
-                                line_noti(tok,msg)
+                                if tok:
+                                    line_noti(tok,msg)
+                                    
             sent = True
 
     except:
