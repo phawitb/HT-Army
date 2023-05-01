@@ -77,13 +77,22 @@ firebase_admin = firebase_admin.initialize_app(cred, {'databaseURL': 'https://ht
 firsttime = True
 sent = False
 
+U = {}
+for k in db.reference("/UsersData").get().keys():
+    u = db.reference(f"/UsersData/{k}/config/unit/name").get()
+    U[k] = u
+
+print('U',U)
+
 while True:
-    try:
+    # try:
         if firsttime:
             T = get_time()
             firsttime = False
 
+            print(f'HT-Army -->sever start!!! {T}')
             line_noti(TOKEN_GROUP_ALL,f'HT-Army -->sever start!!! {T}')
+            
 
         time.sleep(10)
 
@@ -104,21 +113,51 @@ while True:
         #     time.sleep(2)
             T = get_time()
             # for k in K:
+            msg_status = ''
             for k in db.reference("/UsersData").get().keys():
-                #check time match
-                ref = db.reference(f"/UsersData/{k}/config/time")
-                t = ref.get()
-                if t:
-                    if now in set(t):
-                        print('match...',now)
-                        ref = db.reference(f"/UsersData/{k}/last")
-                        last = ref.get()
-                        
-                        #check online
-                        print(float(last['timestamp']))
-                        if time.time() - float(last['timestamp']) < INTERVALTIME_NOTIFY:
-                            print('online')
+                print('\nk',k)
+
+                ref = db.reference(f"/UsersData/{k}/last")
+                last = ref.get()
+                #check online
+                # print(float(last['timestamp']))
+                print('last',last)
+                if last and time.time() - float(last['timestamp']) < INTERVALTIME_NOTIFY:
+                    print('online')
+                    msg_status += f'{U[k]} {k[:5]} ->🟢\n'
+
+                    
+                    #check time match
+                    ref = db.reference(f"/UsersData/{k}/config/time")
+                    t = ref.get()
+                    print('tttt',t)
+                    if t:
+                        t = list(set(t))
+                    else:
+                        t = []
+
+                    ref2 = db.reference(f"/UsersData/{k}/config/everyhour/status")
+                    data = ref2.get()
+                    if data:
+                        for i in range(0,24):
+                            if len(str(i)) == 1:
+                                t.append(f'0{i}:00')
+                            else:
+                                t.append(f'{i}:00')
+
+                    print('t',t)
+                    t = [x for x in t if x]
+                    if t:
+                        if now in set(t):
+                            print('match...',now)
+                            # ref = db.reference(f"/UsersData/{k}/last")
+                            # last = ref.get()
                             
+                            # #check online
+                            # print(float(last['timestamp']))
+                            # if time.time() - float(last['timestamp']) < INTERVALTIME_NOTIFY:
+                            #     print('online')
+                                
                             #get token line
                             ref = db.reference(f"/UsersData/{k}/config/line")
                             token = ref.get()
@@ -135,12 +174,18 @@ while True:
                             for tok in token:
                                 if tok:
                                     line_noti(tok,msg)
+
+                    print('xxxx')
+                else:
+                    print('offline')
+                    msg_status += f'{U[k]} {k[:5]} ->❌\n'
+            line_noti(TOKEN_GROUP_ALL,msg_status)
                                     
             sent = True
 
-    except:
-        print('no internet....')
-        time.sleep(10)
+    # except Exception as e:
+    #     print('Error',e)
+    #     time.sleep(10)
 
 
 
