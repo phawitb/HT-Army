@@ -124,7 +124,10 @@ while True:
                 print('last',last)
                 if last and time.time() - float(last['timestamp']) < INTERVALTIME_NOTIFY:
                     print('online')
-                    msg_status += f'{U[k]} {k[:5]} ->🟢\n'
+                    try:
+                        msg_status += f'{U[k]} {k[:5]} ->🟢\n'
+                    except:
+                        pass
 
                     
                     #check time match
