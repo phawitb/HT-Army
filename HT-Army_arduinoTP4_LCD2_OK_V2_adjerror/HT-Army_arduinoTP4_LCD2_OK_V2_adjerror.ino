@@ -38,7 +38,7 @@ GND <---> GND
 #define ST77XX_CYAN 0x07FF
 #define ST77XX_MAGENTA 0xF81F
 
-String device_id = "202306050";  //-------------------------------
+String device_id = "202306007";  //-------------------------------
 bool firsttime = true;
 float humid,temp,hic,water;
 int train,rest,timestamp;
@@ -49,6 +49,7 @@ int timerDelay = 10;
 
 // String url = "https://raw.githubusercontent.com/phawitb/HT-Army/main/adjusterror.txt";
 String url = "https://raw.githubusercontent.com/phawitb/adjustHT4/main/adjust_error.txt";
+// String url = "https://ht-adjust4.web.app";
 String strs[20];
 int StringCount = 0;
 float adjust_temp = 0;
@@ -313,8 +314,13 @@ void loop(){
     }
     //end get adjHT===========================
     tft.fillScreen(ST77XX_BLACK);
+    tft.setTextColor(ST77XX_RED);
+    tft.setCursor(0, 40);
+    tft.setTextSize(5);
+    tft.println("Adjust");
     tft.setTextSize(4);
     tft.setCursor(0, 120);
+    tft.setTextColor(ST77XX_YELLOW);
     String s = "";
     if(adjust_temp >0){
       s = "+";
@@ -326,6 +332,8 @@ void loop(){
       s = "+";
     }
     tft.println("Humid "+s+String(adjust_humid));
+
+    delay(3000);
 
   }
   //read DHT
