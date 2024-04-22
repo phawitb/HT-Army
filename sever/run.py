@@ -78,11 +78,24 @@ firsttime = True
 sent = False
 
 U = {}
-for k in db.reference("/UsersData").get().keys():
+IDKEYS = db.reference("/UsersData").get().keys()
+for k in IDKEYS:
     u = db.reference(f"/UsersData/{k}/config/unit/name").get()
     U[k] = u
-
 print('U',U)
+
+line_noti(TOKEN_GROUP_ALL,'v2')
+#delete history every saturday
+timestamp = datetime.now().timestamp()
+dt_object = datetime.fromtimestamp(timestamp)
+day_of_week = dt_object.strftime("%A")
+if day_of_week=='Saturday':
+    for k in IDKEYS:
+        ref_his = db.reference(f'/UsersData/{k}/historys')
+        ref_his.delete()
+    msg = f'delete all history! {day_of_week}'
+    print(msg)
+    line_noti(TOKEN_GROUP_ALL,msg)
 
 while True:
     # try:
